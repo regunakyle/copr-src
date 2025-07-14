@@ -1,6 +1,6 @@
 %global fontconf 10-nerd-font-symbols.conf
 
-Name:           symbol-nerd-font
+Name:           symbols-nerd-font
 Version:        3.4.0
 Release:        1%{?dist}
 Summary:        Nerd Fonts (icons only, for font fallback configurations)
@@ -15,7 +15,7 @@ Requires:       fontpackages-filesystem
 %description
 Nerd Fonts is a project that patches developer targeted fonts with a high number of glyphs (icons). 
 Specifically to add a high number of extra glyphs from popular 'iconic fonts' such as Font Awesome, Devicons, Octicons, and others.
-(This package only contains the icons)
+(This package only contains the icons, i.e. Symbols Nerd Font)
 
 %prep
 
