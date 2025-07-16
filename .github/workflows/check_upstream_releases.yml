@@ -10,6 +10,11 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
+    # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+    # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+    concurrency:
+      group: "copr-src"
+      cancel-in-progress: false
     steps:
       # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
       - name: Find Upstream Sarasa Gothic Version
