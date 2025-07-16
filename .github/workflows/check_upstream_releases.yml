@@ -1,0 +1,108 @@
+# https://stackoverflow.com/a/61574295
+
+name: check-upstream-releases
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+jobs:
+  check-upstream-release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
+      - name: Find Upstream Sarasa Gothic Version
+        continue-on-error: true
+        run: |
+          sarasa_gothic=$(curl --connect-timeout 10 -fsSL "https://api.github.com/repos/be5invis/Sarasa-Gothic/releases/latest" | jq -r '.tag_name' | grep -oE "[0-9]+.*")
+          echo "sarasa_gothic=$sarasa_gothic" >> "$GITHUB_ENV"
+      - name: Find Upstream Nerd Font Version
+        continue-on-error: true
+        run: |
+          symbols_nerd_font=$(curl --connect-timeout 10 -fsSL "https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest" | jq -r '.tag_name' | grep -oE "[0-9]+.*")
+          echo "symbols_nerd_font=$symbols_nerd_font" >> "$GITHUB_ENV"
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: "main"
+      - name: Update spec files
+        run: |
+          today="$(date +'%a %b %d %Y')"
+          author="Eric Leung <contact@ericleung.dev>"
+
+          if [ -n "$sarasa_gothic" ] && [ "$sarasa_gothic" != "$(grep -oE "Version:.*" sarasa-gothic/sarasa-gothic.spec | grep -oE "[0-9]+.*")" ]; then
+              echo "Sarasa Gothic newer version found: $sarasa_gothic"
+              specfile=sarasa-gothic/sarasa-gothic.spec
+
+              sed -i \
+                -e "s/^Version: *[0-9.]\+/Version:        $sarasa_gothic/" \
+                -e "s/^Release: *.*/Release:        1%{?dist}/" \
+                "$specfile"
+
+              new_changelog="* $today $author - $sarasa_gothic-1
+          - Update to $sarasa_gothic
+          "
+
+              awk -v entry="$new_changelog" '
+              /^%changelog/ && !done {
+                print;
+                print entry;
+                done=1;
+                next
+              }
+              { print }
+              ' "$specfile" > "$specfile.tmp" && mv "$specfile.tmp" "$specfile"
+
+          fi
+
+          if [ -n "$symbols_nerd_font" ] && [ "$symbols_nerd_font" != "$(grep -oE "Version:.*" symbols-nerd-font/symbols-nerd-font.spec | grep -oE "[0-9]+.*")" ]; then
+              echo "Symbols Nerd Font newer version found: $symbols_nerd_font"
+              specfile=symbols-nerd-font/symbols-nerd-font.spec
+
+              sed -i \
+                -e "s/^Version: *[0-9.]\+/Version:        $symbols_nerd_font/" \
+                -e "s/^Release: *.*/Release:        1%{?dist}/" \
+                "$specfile"
+
+              new_changelog="* $today $author - $symbols_nerd_font-1
+          - Update to $symbols_nerd_font
+          "
+
+              awk -v entry="$new_changelog" '
+              /^%changelog/ && !done {
+                print;
+                print entry;
+                done=1;
+                next
+              }
+              { print }
+              ' "$specfile" > "$specfile.tmp" && mv "$specfile.tmp" "$specfile"
+
+          fi
+      - name: Update and Push
+        run: |
+
+          if git diff --quiet; then
+              echo "No changes to commit"
+              exit 0
+          fi
+
+          git config --global user.name 'Github Action'
+          git config --global user.email 'ga@ericleung.dev'
+
+          commit_message=""
+
+          if [ -n "$sarasa_gothic" ] ; then
+              commit_message+="Sarasa Gothic updated to $sarasa_gothic"
+          fi
+
+          if [ -n "$symbols_nerd_font" ] ; then
+              if [ -n "$commit_message" ]; then
+                  commit_message+=", "
+              fi
+              commit_message+="Symbols Nerd Font updated to $symbols_nerd_font"
+          fi
+
+          git commit -am "$commit_message"
+          git push
