@@ -1,5 +1,5 @@
 Name:           sarasa-gothic
-Version:        1.0.31
+Version:        1.0.32
 Release:        1%{?dist}
 Summary:        A CJK composite font based on Inter, Iosevka and Source Han Sans
 
@@ -27,5 +27,8 @@ install -m 0644 -p Sarasa-*.ttc %{buildroot}%{_fontbasedir}/%{name}
 %{_fontbasedir}/%{name}/*.ttc
 
 %changelog
+* Sun Jul 20 2025 Eric Leung <contact@ericleung.dev> - 1.0.32-1
+- Update to 1.0.32
+
 * Tue Jun 11 2024 Eric Leung <contact@ericleung.dev> - 1.0.31-1
 - Initial package
