@@ -46,7 +46,7 @@ jobs:
                 "$specfile"
 
               new_changelog="* $today $author - $sarasa_gothic-1
-          - Update to $sarasa_gothic
+          - Update to upstream version $sarasa_gothic
           "
 
               awk -v entry="$new_changelog" '
@@ -58,6 +58,8 @@ jobs:
               }
               { print }
               ' "$specfile" > "$specfile.tmp" && mv "$specfile.tmp" "$specfile"
+
+              echo "sarasa_gothic_updated=$sarasa_gothic" >> "$GITHUB_ENV"
 
           fi
 
@@ -71,7 +73,7 @@ jobs:
                 "$specfile"
 
               new_changelog="* $today $author - $symbols_nerd_font-1
-          - Update to $symbols_nerd_font
+          - Update to upstream version $symbols_nerd_font
           "
 
               awk -v entry="$new_changelog" '
@@ -83,6 +85,8 @@ jobs:
               }
               { print }
               ' "$specfile" > "$specfile.tmp" && mv "$specfile.tmp" "$specfile"
+
+              echo "symbols_nerd_font_updated=$symbols_nerd_font" >> "$GITHUB_ENV"
 
           fi
       - name: Update and Push
@@ -98,11 +102,11 @@ jobs:
 
           commit_message=""
 
-          if [ -n "$sarasa_gothic" ] ; then
+          if [ -n "$sarasa_gothic_updated" ] ; then
               commit_message+="Sarasa Gothic updated to $sarasa_gothic"
           fi
 
-          if [ -n "$symbols_nerd_font" ] ; then
+          if [ -n "$symbols_nerd_font_updated" ] ; then
               if [ -n "$commit_message" ]; then
                   commit_message+=", "
               fi
