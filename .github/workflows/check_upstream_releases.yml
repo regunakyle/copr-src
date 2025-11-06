@@ -30,7 +30,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: "main"
+          ref: "master"
       - name: Update spec files
         run: |
           today="$(date +'%a %b %d %Y')"
